@@ -1,59 +1,31 @@
 from redd_parameters import *
 import pandas as pd
-import matplotlib.pyplot as plt
 import time
-import argparse
-import os
 
 
-DATA_DIRECTORY = '/Users/mj/Documents/Learning_Stuff/NILM/transfer_nilm/data/REDD/low_freq/'
+DATA_DIRECTORY = 'data/REDD/low_freq/'
 SAVE_PATH = 'created_data/'
-AGG_MEAN = 522
-AGG_STD = 814
-
-
-def get_arguments():
-    parser = argparse.ArgumentParser(description='sequence to point learning \
-                                     example for NILM')
-    parser.add_argument('--data_dir', type=str, default=DATA_DIRECTORY,
-                        help='The directory containing the REDD data')
-    parser.add_argument('--appliance_name', type=str, default='microwave',
-                        help='which appliance you want to train: \
-                          microwave,fridge,dishwasher,washingmachine')
-    parser.add_argument('--aggregate_mean', type=int, default=AGG_MEAN,
-                        help='Mean value of aggregated reading (mains)')
-    parser.add_argument('--aggregate_std', type=int, default=AGG_STD,
-                        help='Std value of aggregated reading (mains)')
-    parser.add_argument('--save_path', type=str, default=SAVE_PATH,
-                        help='The directory to store the training data')
-    return parser.parse_args()
-
-
-start_time = time.time()
-args = get_arguments()
-appliance_name = args.appliance_name
-print(appliance_name)
 
 
 def main():
-
+    start_time = time.time()
     sample_seconds = 8
     validation_percent = 10
     nrows = None
+    # I set debug to True to see what's going on.
     debug = True
-
-    appliance_name = args.appliance_name
-    print('\n' + appliance_name)
+    appliance_name = 'microwave'
+    print('==> The appliance name is {}.'.format(appliance_name))
     train = pd.DataFrame(columns=['aggregate', appliance_name])
 
     for h in params_appliance[appliance_name]['houses']:
-        print('    ' + args.data_dir + 'house_' + str(h) + '/'
+        print('    ' + DATA_DIRECTORY + 'house_' + str(h) + '/'
               + 'channel_' +
               str(params_appliance[appliance_name]['channels'][params_appliance[appliance_name]['houses'].index(h)]) +
               '.dat')
 
         # read data
-        mains1_df = pd.read_table(args.data_dir + '/' + 'house_' + str(h) + '/' + 'channel_' +
+        mains1_df = pd.read_table(DATA_DIRECTORY + '/' + 'house_' + str(h) + '/' + 'channel_' +
                                   str(1) + '.dat',
                                   sep="\s+",
                                   nrows=nrows,
@@ -62,7 +34,7 @@ def main():
                                   dtype={'time': str},
                                   )
 
-        mains2_df = pd.read_table(args.data_dir + '/' + 'house_' + str(h) + '/' + 'channel_' +
+        mains2_df = pd.read_table(DATA_DIRECTORY + '/' + 'house_' + str(h) + '/' + 'channel_' +
                                   str(2) + '.dat',
                                   sep="\s+",
                                   nrows=nrows,
@@ -70,7 +42,7 @@ def main():
                                   names=['time', 'mains2'],
                                   dtype={'time': str},
                                   )
-        app_df = pd.read_table(args.data_dir + '/' + 'house_' + str(h) + '/' + 'channel_' +
+        app_df = pd.read_table(DATA_DIRECTORY + '/' + 'house_' + str(h) + '/' + 'channel_' +
                                str(params_appliance[appliance_name]['channels']
                                    [params_appliance[appliance_name]['houses'].index(h)]) + '.dat',
                                sep="\s+",
@@ -146,23 +118,12 @@ def main():
             # plt.plot(df_align[appliance_name].values)
             # plt.show()
 
-        # Normilization
-        mean = params_appliance[appliance_name]['mean']
-        std = params_appliance[appliance_name]['std']
-
-        df_align['aggregate'] = (
-            df_align['aggregate'] - args.aggregate_mean) / args.aggregate_std
-        df_align[appliance_name] = (df_align[appliance_name] - mean) / std
-        if debug:
-            print("df_align normalized:")
-            print(df_align.head())
-
         if h == params_appliance[appliance_name]['test_build']:
             # Test CSV
-            print(args.save_path + appliance_name +
-                  '_test_.csv')
-            df_align.to_csv(args.save_path + appliance_name +
-                            '_test_.csv', mode='w', index=False, header=False)
+            print(SAVE_PATH + appliance_name +
+                  '_test_.pkl.zip')
+            df_align.to_pickle(SAVE_PATH + appliance_name +
+                               '_test_.pkl.zip', compression='zip')
             print("    Size of test set is {:.4f} M rows.".format(
                 len(df_align) / 10 ** 6))
             continue
@@ -175,12 +136,12 @@ def main():
     val = train.tail(val_len)
     val.reset_index(drop=True, inplace=True)
     train.drop(train.index[-val_len:], inplace=True)
-    val.to_csv(args.save_path + appliance_name + '_validation_' +
-               '.csv', mode='a', index=False, header=False)
+    val.to_pickle(SAVE_PATH + appliance_name + '_validation_' +
+                  '.pkl.zip', compression='zip')
 
     # Training CSV
-    train.to_csv(args.save_path + appliance_name +
-                 '_training_.csv', mode='a', index=False, header=False)
+    train.to_pickle(SAVE_PATH + appliance_name +
+                    '_training_.pkl.zip', compression='zip')
 
     print("    Size of total training set is {:.4f} M rows.".format(
         len(train) / 10 ** 6))
@@ -188,7 +149,7 @@ def main():
         len(val) / 10 ** 6))
     del train, val
 
-    print("\nPlease find files in: " + args.save_path)
+    print("\nPlease find files in: " + SAVE_PATH)
     # tot = int(int(time.time() - start_time) / 60)
     print("Total elapsed time: {:.2f} min.".format(
         (time.time() - start_time) / 60))
