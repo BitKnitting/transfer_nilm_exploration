@@ -33,3 +33,5 @@ def print_stats(df, title):
     print('--------------------------')
     print('Summary Stats:\n {}'.format(df.describe()))
     print('--------------------------')
+    print('Head:\n {}'.format(df.head()))
+    print('--------------------------')
