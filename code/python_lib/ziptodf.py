@@ -25,6 +25,8 @@ def print_stats(df, title):
     print('--------------------------')
     print('End index: {}'.format(df.index.max()))
     print('--------------------------')
+    print('Rank: {}'.format(len(df.shape)))
+    print('--------------------------')
     print('Shape: {}'.format(df.shape))
     print('--------------------------')
     print('Data types: \n{}'.format(df.dtypes))
