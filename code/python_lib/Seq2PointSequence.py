@@ -1,5 +1,6 @@
 import numpy as np
 import keras
+from keras import backend as K
 #
 # The goal of this code is to create a Keras Sequence class that will work keras's
 # model.fit_generator() method.
@@ -8,6 +9,7 @@ import keras
 #
 # See: https://github.com/keras-team/keras/blob/master/keras/utils/data_utils.py#L302
 # For documentation on implementing the Sequence() abstract base class.
+
 
 class Seq2PointSequence(keras.utils.Sequence):
     def __init__(self, df, windowsize=599, batchsize=1000,  shuffle=True):
@@ -18,7 +20,6 @@ class Seq2PointSequence(keras.utils.Sequence):
         self.inputs, self.targets = np_array[:, 0], np_array[:, 1]
         self.inputs = K.cast_to_floatx(self.inputs)
         self.targets = K.cast_to_floatx(self.targets)
-
 
     def __len__(self):
         return int(np.ceil(len(self.inputs)/self.batchsize))
