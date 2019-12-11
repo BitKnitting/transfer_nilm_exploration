@@ -11,7 +11,7 @@ from keras import backend as K
 # For documentation on implementing the Sequence() abstract base class.
 
 
-class Seq2PointSequence(keras.utils.Sequence):
+class Seq2PointGenerator(keras.utils.Sequence):
     def __init__(self, df, windowsize=599, batchsize=1000,  shuffle=True):
         self.windowsize = windowsize
         self.shuffle = shuffle
